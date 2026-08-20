@@ -1,0 +1,12 @@
+# Python virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# IntelliJ IDEA
+.idea/
+
+# Logs
+*.log
