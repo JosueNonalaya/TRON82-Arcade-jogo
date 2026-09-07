@@ -1,4 +1,3 @@
-
 class Board:
     def __init__(self, largura, altura):
         self.largura = largura
@@ -9,9 +8,9 @@ class Board:
         x, y = posicao
 
         return(
-            0 <= x <= self.largura
+            0 <= x < self.largura
             and
-            0 <= y <= self.altura
+            0 <= y < self.altura
         )
 
     def esta_ocupada(self, posicao):
