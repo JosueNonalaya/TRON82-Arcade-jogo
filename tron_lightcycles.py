@@ -1,12 +1,12 @@
-import pygame
 import sys
-import random
-#from dataclasses import dataclass, field
 from config import *
 
+from controllers.CPU import CPU
+from controllers.Humano import Humano
 from entities.Player import Player
 from entities.LightCycle import LightCycle
 from game.board import Board
+
 
 
 # ---------------- Game ----------------
@@ -36,8 +36,8 @@ class TronGame:
         p2_lightcycle = LightCycle(P2_COLOR, P2_HEAD,(GRID_W - GRID_W // 4 - 1, mid_y), LEFT)
 
         # CRIANDO OS JOGADORES
-        self.p1 = Player("P1", p1_lightcycle, None)
-        self.p2 = Player("P2", p2_lightcycle, None)
+        self.p1 = Player("P1", p1_lightcycle, CPU())
+        self.p2 = Player("P2", p2_lightcycle, Humano(P2_CONTROLS))
 
 
         self.score = {"P1": 0, "P2": 0}
@@ -76,24 +76,10 @@ class TronGame:
                     self.tps = min(60, self.tps + 1)
                 if event.key == pygame.K_MINUS:
                     self.tps = max(4, self.tps - 1)
-                if event.key == pygame.K_b:
-                    self.p2.is_cpu = not self.p2.is_cpu
 
         keys = pygame.key.get_pressed()
-        keys = pygame.key.get_pressed()
+        self.p2.controller.controlar(self.p2.lightcycle, keys)
 
-        if self.p2.lightcycle.vivo:
-            if keys[P2_CONTROLS['up']] and self.p2.lightcycle.direcao != DOWN:
-                self.p2.lightcycle.direcao = UP
-
-            elif keys[P2_CONTROLS['down']] and self.p2.lightcycle.direcao != UP:
-                self.p2.lightcycle.direcao = DOWN
-
-            elif keys[P2_CONTROLS['left']] and self.p2.lightcycle.direcao != RIGHT:
-                self.p2.lightcycle.direcao = LEFT
-
-            elif keys[P2_CONTROLS['right']] and self.p2.lightcycle.direcao != LEFT:
-                self.p2.lightcycle.direcao = RIGHT
 
     def update(self, dt):
         if self.paused:
@@ -109,6 +95,11 @@ class TronGame:
         step_time = 1.0 / float(self.tps)
         while self.tick_accum >= step_time and not self.round_over:
             self.tick_accum -= step_time
+
+            self.p1.controller.controlar(
+                self.p1.lightcycle,
+                self.board
+            )
 
             new_positions = {}
 
@@ -161,7 +152,7 @@ class TronGame:
             f"P1 (CPU)  {self.score['P1']}",
             f"P2 (Arrows)  {self.score['P2']}",
             f"Speed: {self.tps} tps",
-            "[P]ause  [R]eset  [G]rid  [B]ot  +/- speed  Esc=Quit",
+            "[P]ause  [R]eset  [G]rid  +/- speed  Esc=Quit",
         ]
         x = 10
         y = 8
