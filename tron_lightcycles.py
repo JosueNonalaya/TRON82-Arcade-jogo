@@ -1,6 +1,7 @@
 import sys
 from config import *
 
+from infraestrutura.renderizado import Renderizado
 from controllers.CPU import CPU
 from controllers.Humano import Humano
 from entities.Player import Player
@@ -8,16 +9,17 @@ from entities.LightCycle import LightCycle
 from game.board import Board
 
 
-
 # ---------------- Game ----------------
 class TronGame:
     def __init__(self):
+        #Inicializando PYGAME
         pygame.init()
+
+        #Config janela jogo
         pygame.display.set_caption("Tron Lightcycles — Pygame")
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT))
+        self.renderer = Renderizado(self.screen)
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont("consolas", 20)
-        self.bigfont = pygame.font.SysFont("consolas", 42, bold=True)
 
         #ADICIONANDO A CLASSE BOARD
         self.board = Board(GRID_W, GRID_H)
@@ -43,6 +45,7 @@ class TronGame:
         self.score = {"P1": 0, "P2": 0}
         self.reset_round(hard=True)
 
+    #REINICIA PARTIDA
     def reset_round(self, hard=False):
         self.board.limpar()
 
@@ -57,6 +60,7 @@ class TronGame:
         if hard:
             self.score = {"P1": 0, "P2": 0}
 
+    # EVENTOS GERAIS CONTROLE: ESC, R, P, G, +/-, QUIT
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -80,7 +84,7 @@ class TronGame:
         keys = pygame.key.get_pressed()
         self.p2.controller.controlar(self.p2.lightcycle, keys)
 
-
+    # COORDENA O LOOP LOGICA PARTIDA
     def update(self, dt):
         if self.paused:
             return
@@ -126,58 +130,19 @@ class TronGame:
                 self.score['P1'] += 1
                 self.round_over = True
 
-    def draw_grid(self):
-        if not self.grid_visible:
-            return
-        for x in range(GRID_W + 1):
-            pygame.draw.line(self.screen, GRID_COLOR,
-                             (MARGIN + x * CELL_SIZE, MARGIN),
-                             (MARGIN + x * CELL_SIZE, MARGIN + GRID_H * CELL_SIZE), 1)
-        for y in range(GRID_H + 1):
-            pygame.draw.line(self.screen, GRID_COLOR,
-                             (MARGIN, MARGIN + y * CELL_SIZE),
-                             (MARGIN + GRID_W * CELL_SIZE, MARGIN + y * CELL_SIZE), 1)
-
-    def draw_trails(self, player):
-        for (x, y) in player.lightcycle.rastro:
-            rect = pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-            pygame.draw.rect(self.screen, player.lightcycle.cor, rect)
-        if player.lightcycle.vivo:
-            x, y = player.lightcycle.posicao
-            rect = pygame.Rect(MARGIN + x * CELL_SIZE, MARGIN + y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-            pygame.draw.rect(self.screen, player.lightcycle.cabeca_cor, rect)
-
-    def draw_hud(self):
-        tips = [
-            f"P1 (CPU)  {self.score['P1']}",
-            f"P2 (Arrows)  {self.score['P2']}",
-            f"Speed: {self.tps} tps",
-            "[P]ause  [R]eset  [G]rid  +/- speed  Esc=Quit",
-        ]
-        x = 10
-        y = 8
-        for t in tips:
-            img = self.font.render(t, True, TEXT_COLOR)
-            self.screen.blit(img, (x, y))
-            y += img.get_height() + 2
-
-        if self.paused:
-            text = self.bigfont.render("PAUSED", True, TEXT_COLOR)
-            self.screen.blit(text, (WIDTH // 2 - text.get_width() // 2, 10))
-
-        if self.round_over:
-            msg = "DRAW" if self.p1.lightcycle.vivo == self.p2.lightcycle.vivo else ("P1 SCORES" if self.p1.lightcycle.vivo else "P2 SCORES")
-            text = self.bigfont.render(msg, True, TEXT_COLOR)
-            self.screen.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - text.get_height() // 2))
-
+    #DELEGA O RENDERIZADO
     def draw(self):
-        self.screen.fill(BG_COLOR)
-        self.draw_grid()
-        self.draw_trails(self.p1)
-        self.draw_trails(self.p2)
-        self.draw_hud()
-        pygame.display.flip()
+        self.renderer.renderizar(
+            self.grid_visible,
+            self.score,
+            self.tps,
+            self.paused,
+            self.round_over,
+            self.p1,
+            self.p2
+        )
 
+    #LOOP PRINCIPAL
     def run(self):
         while True:
             dt = self.clock.tick(FPS) / 1000.0
