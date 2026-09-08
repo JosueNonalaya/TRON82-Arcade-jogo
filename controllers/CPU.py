@@ -1,4 +1,4 @@
-from config import *
+from config.config import *
 from controllers.Controller import Controller
 
 class CPU (Controller):

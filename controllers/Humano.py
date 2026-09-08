@@ -1,5 +1,5 @@
 from controllers.Controller import Controller
-from config import *
+from config.config import *
 
 class Humano(Controller):
     def __init__(self, controles):

@@ -1,5 +1,5 @@
-import pygame
-from config import *
+from config.config import *
+
 class Renderizado:
     def __init__(self, screen):
         self.screen = screen

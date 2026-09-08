@@ -1,5 +1,5 @@
 import sys
-from config import *
+from config.config import *
 
 from infraestrutura.renderizado import Renderizado
 from controllers.CPU import CPU
