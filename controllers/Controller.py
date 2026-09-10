@@ -1,0 +1,7 @@
+from abc import ABC, abstractmethod
+
+class Controller(ABC):
+
+    @abstractmethod
+    def controlar(self, lightcycle, keys):
+        pass
